@@ -46,7 +46,7 @@ namespace Test.API
         [Test]
         public void GetUsersWithFailedLoginsAboveLimitTest()
         {
-            var failCount = 3; // Specify a fail count limit
+            var failCount = 5; // Specify a fail count limit
 
             var request = new RestRequest("/loginfailtotal", Method.Get);
             request.AddParameter("fail_count", failCount);
