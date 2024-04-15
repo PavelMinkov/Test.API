@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using Newtonsoft.Json;
 using RestSharp;
+using static Test.API.TestHelpers;
 
 namespace Test.API
 {
@@ -24,13 +25,7 @@ namespace Test.API
 
             var response = client.Execute(request);
 
-            Assert.That(response.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.OK));
-
-            var jsonResponse = JsonConvert.DeserializeObject<Dictionary<string, int>>(response.Content);
-            Assert.That(jsonResponse.ContainsKey("total_fail_attempts"), Is.True, "total_fail_attempts not found in JSON response.");
-
-            int totalFailAttempts = jsonResponse["total_fail_attempts"];
-            Assert.That(totalFailAttempts, Is.GreaterThanOrEqualTo(0), "Total fail attempts should be non-negative.");
+            AssertResponseStructure(response);
         }
 
         // Test case 2: Verify that the endpoint returns the correct total number of failed login attempts for a specific user.
@@ -44,20 +39,14 @@ namespace Test.API
 
             var response = client.Execute(request);
 
-            Assert.That(response.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.OK));
-
-            var jsonResponse = JsonConvert.DeserializeObject<Dictionary<string, int>>(response.Content);
-            Assert.That(jsonResponse.ContainsKey("total_fail_attempts"), Is.True, "total_fail_attempts not found in JSON response.");
-
-            int totalFailAttempts = jsonResponse["total_fail_attempts"];
-            Assert.That(totalFailAttempts, Is.GreaterThanOrEqualTo(0), "Total fail attempts should be non-negative for the specific user.");
+            AssertResponseStructure(response);
         }
 
         // Test case 3: Verify that the endpoint returns only users with a number of failed logins above a specified value.
         [Test]
         public void GetUsersWithFailedLoginsAboveLimitTest()
         {
-            var failCount = 5; // Specify a fail count limit
+            var failCount = 3; // Specify a fail count limit
 
             var request = new RestRequest("/loginfailtotal", Method.Get);
             request.AddParameter("fail_count", failCount);
@@ -67,12 +56,10 @@ namespace Test.API
             Assert.That(response.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.OK));
             Assert.That(response.Content, Contains.Substring("users"));
 
-            var jsonResponse = JsonConvert.DeserializeObject<List<Dictionary<string, int>>>(response.Content);
+            var jsonResponse = JsonConvert.DeserializeObject<List<LoginFailResponse>>(response.Content);
             foreach (var user in jsonResponse)
             {
-                Assert.That(user.ContainsKey("total_fail_attempts"), Is.True, "total_fail_attempts not found for a user in JSON response.");
-                int userFailAttempts = user["total_fail_attempts"];
-                Assert.That(userFailAttempts, Is.GreaterThanOrEqualTo(failCount), "User should have fail attempts above specified count.");
+                Assert.That(user.TotalFailAttempts, Is.GreaterThanOrEqualTo(failCount), $"User {user.UserName} should have fail attempts above specified count.");
             }
         }
 
@@ -80,7 +67,7 @@ namespace Test.API
         [Test]
         public void GetLimitedResultsWithFetchLimitTest()
         {
-            var fetchLimit = 10; // Specify a fetch limit
+            var fetchLimit = 10; // Specify a fetch limit (Assuming there are 10 users)
 
             var request = new RestRequest("/loginfailtotal", Method.Get);
             request.AddParameter("fetch_limit", fetchLimit);
@@ -89,7 +76,7 @@ namespace Test.API
 
             Assert.That(response.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.OK));
 
-            var jsonResponse = JsonConvert.DeserializeObject<List<Dictionary<string, int>>>(response.Content);
+            var jsonResponse = JsonConvert.DeserializeObject<List<LoginFailResponse>> (response.Content);
             Assert.That(jsonResponse.Count, Is.EqualTo(fetchLimit), "Number of users in response does not match fetch limit.");
         }
 
@@ -104,7 +91,7 @@ namespace Test.API
 
             var response = client.Execute(request);
 
-            Assert.That(response.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.OK));
+            AssertResponseStructure(response);
 
             var jsonResponse = JsonConvert.DeserializeObject<Dictionary<string, bool>>(response.Content);
             Assert.That(jsonResponse.ContainsKey("success"), Is.True, "success field not found in JSON response.");
