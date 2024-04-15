@@ -17,10 +17,5 @@ namespace Test.API
             int totalFailAttempts = jsonResponse.TotalFailAttempts;
             Assert.That(totalFailAttempts, Is.GreaterThanOrEqualTo(3), "Total fail attempts should be at least 3.");
         }
-
-        public static void AssertUserFailCount(int userFailAttempts, int expectedFailCount)
-        {
-            Assert.That(userFailAttempts, Is.EqualTo(expectedFailCount), $"User fail count should be {expectedFailCount}.");
-        }
     }
 }
