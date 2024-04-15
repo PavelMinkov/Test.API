@@ -15,7 +15,7 @@ namespace Test.API
             Assert.NotNull(jsonResponse.TotalFailAttempts, "TotalFailAttempts field not found in JSON response.");
 
             int totalFailAttempts = jsonResponse.TotalFailAttempts;
-            Assert.That(totalFailAttempts, Is.GreaterThanOrEqualTo(0), "Total fail attempts should be non-negative.");
+            Assert.That(totalFailAttempts, Is.GreaterThanOrEqualTo(3), "Total fail attempts should be at least 3.");
         }
 
         public static void AssertUserFailCount(int userFailAttempts, int expectedFailCount)
